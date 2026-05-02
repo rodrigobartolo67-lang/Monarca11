@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Traductor Legal de Archivos</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <main class="container">
+    <h1>Traductor legal de archivos</h1>
+    <p class="subtitle">Sube documentos de leyes/códigos y tradúcelos a cualquier idioma.</p>
+
+    <form id="uploadForm">
+      <label for="target_language">Idioma destino</label>
+      <input id="target_language" name="target_language" placeholder="Ejemplo: español, inglés, alemán" required />
+
+      <label for="file">Archivo</label>
+      <input id="file" type="file" name="file" required />
+
+      <button type="submit">Traducir archivo</button>
+    </form>
+
+    <section id="status"></section>
+    <textarea id="result" rows="20" placeholder="Aquí aparecerá la traducción..."></textarea>
+  </main>
+
+  <script>
+    const form = document.getElementById('uploadForm');
+    const statusBox = document.getElementById('status');
+    const result = document.getElementById('result');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      statusBox.textContent = 'Subiendo y procesando...';
+      result.value = '';
+
+      const formData = new FormData(form);
+
+      try {
+        const response = await fetch('/translate', { method: 'POST', body: formData });
+        const data = await response.json();
+
+        if (!response.ok) {
+          statusBox.textContent = data.error || 'Error inesperado';
+          return;
+        }
+
+        statusBox.textContent = `Archivo procesado: ${data.filename}`;
+        result.value = data.translated_text || '';
+      } catch (error) {
+        statusBox.textContent = 'Error de red o servidor.';
+      }
+    });
+  </script>
+</body>
+</html>
